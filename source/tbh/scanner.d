@@ -2,9 +2,10 @@ module tbh.scanner;
 
 
 class Scanner {
-  import std.stdio : File;
+  import std.stdio;
   import std.conv : to;
   import std.array : split;
+  import std.string : chomp;
 
   private File file;
   private dchar[][] str;
