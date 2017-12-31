@@ -1,0 +1,10 @@
+{
+  "name": "thoubough",
+  "authors": [
+    "Shu Kakihana"
+  ],
+  "description": "kurokoji's D library.",
+  "copyright": "Copyright © 2018, Shu Kakihana",
+  "license": "MIT",
+  "targetType": "library"
+}

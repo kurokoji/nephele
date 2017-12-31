@@ -1,0 +1,14 @@
+.dub
+docs.json
+__dummy.html
+docs/
+thoubough.so
+thoubough.dylib
+thoubough.dll
+thoubough.a
+thoubough.lib
+thoubough-test-*
+*.exe
+*.o
+*.obj
+*.lst
