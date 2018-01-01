@@ -49,7 +49,7 @@ class Scanner {
 
 unittest {
   import std.stdio;
-  auto file = File("../tst.txt", "r");
+  auto file = File("./tst.txt", "r");
   auto cin = new Scanner(file);
   int n = cin.next!int;
   int[] ar = cin.next!(int[])(n);
