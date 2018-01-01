@@ -46,3 +46,17 @@ class Scanner {
     return ret;
   }
 }
+
+unittest {
+  import std.stdio;
+  auto file = File("../tst.txt", "r");
+  auto cin = new Scanner(file);
+  int n = cin.next!int;
+  int[] ar = cin.next!(int[])(n);
+  assert(n == 4);
+  assert(ar == [1, 2, 3, 45]);
+  n = cin.next!int;
+  ar = cin.next!(int[])(n);
+  assert(n == 4);
+  assert(ar == [1, 2, 3, 45]);
+}
