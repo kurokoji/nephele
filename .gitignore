@@ -12,3 +12,4 @@ thoubough-test-*
 *.o
 *.obj
 *.lst
+tst.txt
