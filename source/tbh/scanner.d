@@ -36,7 +36,7 @@ class Scanner {
     return next.to!(T);
   }
 
-  T[] next(T : T[])(uint len) {
+  T[] nextArray(T)(uint len) {
     T[] ret = new T[len];
 
     foreach (ref c; ret) {
@@ -52,11 +52,11 @@ unittest {
   auto file = File("./tst.txt", "r");
   auto cin = new Scanner(file);
   int n = cin.next!int;
-  int[] ar = cin.next!(int[])(n);
+  int[] ar = cin.nextArray!int(n);
   assert(n == 4);
   assert(ar == [1, 2, 3, 45]);
   n = cin.next!int;
-  ar = cin.next!(int[])(n);
+  ar = cin.nextArray!int(n);
   assert(n == 4);
   assert(ar == [1, 2, 3, 45]);
 }
