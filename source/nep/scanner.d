@@ -1,4 +1,4 @@
-module tbh.scanner;
+module nep.scanner;
 
 
 class Scanner {
