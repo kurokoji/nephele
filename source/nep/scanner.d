@@ -45,6 +45,12 @@ class Scanner {
 
     return ret;
   }
+
+  void scan()() {}
+  void scan(T, S...)(ref T x, ref S args) {
+    x = next!(T);
+    scan(args);
+  }
 }
 
 unittest {
@@ -59,4 +65,8 @@ unittest {
   ar = cin.nextArray!int(n);
   assert(n == 4);
   assert(ar == [1, 2, 3, 45]);
+  int x, y, z;
+  string s;
+  cin.scan(x, y, z, s);
+  assert(x == 1 && y == 2 && z == 3 && s == "tst");
 }
