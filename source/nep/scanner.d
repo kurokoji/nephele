@@ -8,22 +8,22 @@ class Scanner {
   import std.string : chomp;
 
   private File file;
-  private dchar[][] str;
-  private uint idx;
+  private char[][] str;
+  private size_t idx;
 
   this(File file = stdin) {
     this.file = file;
     this.idx = 0;
   }
 
-  private dchar[] next() {
+  private char[] next() {
     if (idx < str.length) {
       return str[idx++];
     }
 
-    dchar[] s;
+    char[] s;
     while (s.length == 0) {
-      s = file.readln.chomp.to!(dchar[]);
+      s = file.readln.chomp.to!(char[]);
     }
 
     str = s.split;
@@ -36,7 +36,7 @@ class Scanner {
     return next.to!(T);
   }
 
-  T[] nextArray(T)(uint len) {
+  T[] nextArray(T)(size_t len) {
     T[] ret = new T[len];
 
     foreach (ref c; ret) {
