@@ -90,4 +90,20 @@ struct Stack(T)
         }
     }
 
+    @system unittest
+    {
+        import std.stdio : writeln;
+        auto st = Payload!int();
+        st ~= 1;
+        st ~= 10;
+        assert(st.top == 10);
+        st.pop();
+        assert(st.top == 1);
+    }
+
+    @system unittest
+    {
+        auto st = Payload!int();
+        assert(st.empty);
+    }
 }
