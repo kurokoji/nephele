@@ -17,6 +17,26 @@ struct Stack(T)
             }
         }
 
+        @property size_t length() const
+        {
+            return _length;
+        }
+
+        @property size_t capacity() const
+        {
+            return _capacity;
+        }
+
+        @property bool empty() const
+        {
+            return _length == 0;
+        }
+
+        @property ref inout(T) top() inout
+        {
+            return _data[_length - 1];
+        }
+
         void reserve(size_t newCapacity)
         {
             import core.memory : GC;
