@@ -8,6 +8,8 @@ struct Stack(T)
         private T* _data;
         private size_t _capacity, _length;
 
+        alias opOpAssign(string op = "~") = emplace;
+
         ~this()
         {
             import core.memory : GC;
