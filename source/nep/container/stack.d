@@ -8,6 +8,14 @@ struct Stack(T)
         private T* _data;
         private size_t _capacity, _length;
 
+        ~this()
+        {
+            import core.memory : GC;
+            if (_data != null)
+            {
+                GC.free(_data);
+            }
+        }
     }
 
 }
