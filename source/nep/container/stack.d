@@ -36,6 +36,7 @@ struct Stack(T)
 
         @property ref inout(T) top() inout
         {
+            assert(_length == 0, "nep.container.Stack.top: Stack is empty");
             return _data[_length - 1];
         }
 
@@ -86,6 +87,7 @@ struct Stack(T)
 
         void pop()
         {
+            assert(_length == 0, "nep.container.Stack.pop: Stack is empty");
             --_length;
         }
     }
