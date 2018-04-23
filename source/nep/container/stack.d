@@ -72,7 +72,7 @@ struct Stack(T)
             _length = 0;
         }
 
-        void emplace()(const ref auto T value)
+        void emplace(E)(const ref auto E value) if (isImplicitlyConvertible(E, T))
         {
             if (_length == _capacity)
             {
