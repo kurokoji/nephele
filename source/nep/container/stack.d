@@ -79,7 +79,7 @@ struct Stack(T)
                 }
                 else
                 {
-                    reserve(_capacity * 2);
+                    reserve(1 + _capacity * 3 / 2);
                 }
             }
             _data[_length++] = value;
