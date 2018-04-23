@@ -3,6 +3,9 @@ module nep.container.stack;
 
 struct Stack(T)
 {
+    import std.traits;
+    import std.range.primitives;
+
     private struct Payload(T, size_t _minCapacity = 5) if (_minCapacity >= 0)
     {
         private T* _data;
