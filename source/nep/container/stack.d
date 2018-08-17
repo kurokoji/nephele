@@ -1,114 +1,122 @@
 module nep.container.stack;
 
-
-struct Stack(T)
+struct Stack(T, size_t minCapacity = 5) if (minCapacity >= 0)
 {
     import std.traits;
     import std.range.primitives;
 
-    private struct Payload(T, size_t _minCapacity = 5) if (_minCapacity >= 0)
+    private
     {
-        private T* _data;
-        private size_t _capacity, _length;
+        T* _data;
+        size_t _capacity, _length;
+    }
 
-        alias opOpAssign(string op = "~") = emplace;
+    alias opOpAssign(string op = "~") = insertBack;
 
-        ~this()
+    ~this()
+    {
+        import core.memory : GC;
+
+        if (_data != null)
         {
-            import core.memory : GC;
-            if (_data != null)
-            {
-                GC.free(_data);
-            }
+            GC.free(_data);
         }
+    }
 
-        @property size_t length() const
+    @property
+    {
+        size_t length() const
         {
             return _length;
         }
 
-        @property size_t capacity() const
+        size_t capacity() const
         {
             return _capacity;
         }
 
-        @property bool empty() const
+        bool empty() const
         {
             return _length == 0;
         }
 
-        @property ref inout(T) top() inout
+        ref inout(T) back() inout
         {
-            assert(_length == 0, "nep.container.Stack.top: Stack is empty");
+            assert(_length != 0, "nep.container.Stack.top: Stack is empty");
             return _data[_length - 1];
         }
 
-        void reserve(size_t newCapacity)
+    }
+
+    void reserve(size_t newCapacity)
+    {
+        import core.memory : GC;
+        import core.stdc.string : memcpy;
+
+        if (_capacity >= newCapacity)
+            return;
+
+        T* newData = cast(T*) GC.malloc(T.sizeof * newCapacity);
+        if (_length != 0)
+            memcpy(newData, _data, _length * T.sizeof);
+        _capacity = newCapacity;
+
+        T* oldData = _data;
+        _data = newData;
+        GC.free(oldData);
+    }
+
+    void free()
+    {
+        import core.memory : GC;
+
+        GC.free(_data);
+        _length = 0;
+        _capacity = 0;
+    }
+
+    void crear()
+    {
+        _length = 0;
+    }
+
+    void insertBack(E)(E value) if (isImplicitlyConvertible!(E, T))
+    {
+        if (_length == _capacity)
         {
-            import core.memory : GC;
-            import core.stdc.string : memcpy;
-
-            if (_capacity >= newCapacity) return;
-
-            T* newData = cast(T*)GC.malloc(T.sizeof * newCapacity);
-            if (_length != 0) memcpy(newData, _data, _length * T.sizeof);
-            _capacity = newCapacity;
-
-            T* oldData = _data;
-            _data = newData;
-            GC.free(oldData);
-        }
-
-        void free()
-        {
-            import core.memory : GC;
-            GC.free(_data);
-            _length = 0;
-            _capacity = 0;
-        }
-
-        void crear()
-        {
-            _length = 0;
-        }
-
-        void emplace(E)(const ref auto E value) if (isImplicitlyConvertible(E, T))
-        {
-            if (_length == _capacity)
+            if (_capacity < minCapacity)
             {
-                if (_capacity < _minCapacity)
-                {
-                    reserve(_minCapacity);
-                }
-                else
-                {
-                    reserve(1 + _capacity * 3 / 2);
-                }
+                reserve(minCapacity);
             }
-            _data[_length++] = value;
+            else
+            {
+                reserve(1 + _capacity * 3 / 2);
+            }
         }
-
-        void pop()
-        {
-            assert(_length == 0, "nep.container.Stack.pop: Stack is empty");
-            --_length;
-        }
+        _data[_length++] = value;
     }
 
-    @system unittest
+    void popBack()
     {
-        import std.stdio : writeln;
-        auto st = Payload!int();
-        st ~= 1;
-        st ~= 10;
-        assert(st.top == 10);
-        st.pop();
-        assert(st.top == 1);
+        assert(_length != 0, "nep.container.Stack.pop: Stack is empty");
+        --_length;
     }
+}
 
-    @system unittest
-    {
-        auto st = Payload!int();
-        assert(st.empty);
-    }
+@system unittest
+{
+    import std.stdio : writeln;
+
+    auto st = Stack!int();
+    st ~= 1;
+    st ~= 10;
+    assert(st.back == 10);
+    st.popBack();
+    assert(st.back == 1);
+}
+
+@system unittest
+{
+    auto st = Stack!int();
+    assert(st.empty);
 }
