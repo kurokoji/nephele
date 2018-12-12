@@ -297,6 +297,10 @@ struct Deque(T, bool mayNull = true) {
     ref inout(T) back() inout {
       return p.back;
     }
+
+    Deque dup() {
+      return Deque(this[]);
+    }
   }
 
   ref inout(T) opIndex(size_t idx) inout {
@@ -491,5 +495,15 @@ struct Deque(T, bool mayNull = true) {
 
   dq ~= iota(0, 100);
   assert(equal(dq[], iota(0, 100)));
+}
+
+@system unittest {
+  import std.algorithm : equal;
+
+  auto dq = Deque!int([1, 2, 3]);
+  auto copyDq = dq.dup;
+
+  copyDq[0] = 2;
+  assert(!equal(dq[], copyDq[]));
 }
 // }}}
