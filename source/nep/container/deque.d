@@ -9,9 +9,14 @@ struct Deque(T, bool mayNull = true) {
   alias opDollar = length;
   alias opOpAssign(string op : "~") = insertBack;
 
-  private struct DequePayload(T, size_t pageSize = 8) {
-    import std.traits;
+  // DequePayload {{{
+  private struct DequePayload(T, size_t pageSize = 4) {
+    import std.traits : isMutable;
     import core.exception : RangeError;
+
+    this(this) @disable;
+
+    void opAssign(DequePayload rhs) @disable;
 
     private {
       T[][] _data;
@@ -125,17 +130,20 @@ struct Deque(T, bool mayNull = true) {
     string toString() const {
       import std.format : format;
 
-      string ret = "[ ";
+      string ret = "[";
       foreach (i; 0 .. len) {
-        ret ~= format("%s%s", this[i], i == len - 1 ? " ]" : ", ");
+        ret ~= format("%s%s", this[i], i == len - 1 ? "]" : ", ");
       }
 
       return ret;
     }
   }
+  // }}}
 
+  // RangeT {{{
   private struct RangeT(A) {
-    import std.traits : CopyTypeQualifiers;
+    import std.traits : CopyTypeQualifiers, isMutable;
+
     alias E = CopyTypeQualifiers!(A, T);
 
     alias opDollar = length;
@@ -174,13 +182,15 @@ struct Deque(T, bool mayNull = true) {
     }
 
     void popFront() {
-      assert(!empty, "nep.container.deque.RangeT.popFront: Attempting to access the front of an empty Deque");
+      assert(!empty,
+          "nep.container.deque.RangeT.popFront: Attempting to access the front of an empty Deque");
 
       ++_l;
     }
 
     void popBack() {
-      assert(!empty, "nep.container.deque.RangeT.popBack: Attempting to access the back of an empty Deque");
+      assert(!empty,
+          "nep.container.deque.RangeT.popBack: Attempting to access the back of an empty Deque");
 
       --_r;
     }
@@ -198,9 +208,60 @@ struct Deque(T, bool mayNull = true) {
     RangeT opSlice(size_t i, size_t j) {
       assert(i <= j && _l + i <= _r);
 
-      return RangeT(_outer, _l + i, _r + j);
+      return RangeT(_outer, _l + i, _l + j);
+    }
+
+    static if (isMutable!A) {
+      void opSliceAssign(E value) {
+        assert(_r <= _outer.length);
+
+        foreach (idx; _l .. _r) {
+          (*_outer)[idx] = value;
+        }
+      }
+
+      void opSliceAssign(E value, size_t i, size_t j) {
+        assert(_l + j <= _r);
+
+        foreach (idx; _l + i .. _l + j) {
+          (*_outer)[idx] = value;
+        }
+      }
+
+      void opSliceUnary(string op)() if (op == "++" || op == "--") {
+        assert(_r <= _outer.length);
+
+        foreach (idx; _l .. _r) {
+          mixin(op ~ "(*_outer)[idx];");
+        }
+      }
+
+      void opSliceUnary(string op)(size_t i, size_t j) if (op == "++" || op == "--") {
+        assert(_l + j <= _r);
+
+        foreach (idx; _l + i .. _l + j) {
+          mixin(op ~ "(*_outer)[idx];");
+        }
+      }
+
+      void opSliceOpAssign(string op)(E value) {
+        assert(_r <= _outer.length);
+
+        foreach (idx; _l .. _r) {
+          mixin("(*_outer)[idx] " ~ op ~ "= value;");
+        }
+      }
+
+      void opSliceOpAssign(string op)(E value, size_t i, size_t j) {
+        assert(_l + j <= _r);
+
+        foreach (idx; _l + i .. _l + j) {
+          mixin("(*_outer)[idx] " ~ op ~ "= value;");
+        }
+      }
     }
   }
+  // }}}
 
   private {
     Payload* p;
@@ -210,8 +271,14 @@ struct Deque(T, bool mayNull = true) {
     p = new Payload();
 
     foreach (e; args) {
-      p ~= e;
+      this ~= e;
     }
+  }
+
+  this(Range)(Range r)
+      if (isInputRange!Range && isImplicitlyConvertible!(ElementType!Range,
+        T) && !is(Range == T[])) {
+    insertBack(r);
   }
 
   @property {
@@ -246,8 +313,48 @@ struct Deque(T, bool mayNull = true) {
     return typeof(return)(p, 0, length);
   }
 
+  ConstRange opSlice() const {
+    return typeof(return)(p, 0, length);
+  }
+
+  ImmutableRange opSlice() immutable {
+    return typeof(return)(p, 0, length);
+  }
+
   Range opSlice(size_t i, size_t j) {
     return typeof(return)(p, i, j);
+  }
+
+  ConstRange opSlice(size_t i, size_t j) const {
+    return typeof(return)(p, i, j);
+  }
+
+  ImmutableRange opSlice(size_t i, size_t j) immutable {
+    return typeof(return)(p, i, j);
+  }
+
+  void opSliceAssign(T value) {
+    opSlice()[] = value;
+  }
+
+  void opSliceAssign(T value, size_t i, size_t j) {
+    opSlice()[i .. j] = value;
+  }
+
+  void opSliceUnary(string op)() if (op == "++" || op == "--") {
+    mixin(op ~ "opSlice()[0 .. $];");
+  }
+
+  void opSliceUnary(string op)(size_t i, size_t j) if (op == "++" || op == "--") {
+    mixin(op ~ "opSlice()[i .. j];");
+  }
+
+  void opSliceOpAssign(string op)(T value) {
+    mixin("opSlice()[0 .. $] " ~ op ~ "= value;");
+  }
+
+  void opSliceOpAssign(string op)(T value, size_t i, size_t j) {
+    mixin("opSlice()[i .. j] " ~ op ~ "= value;");
   }
 
   void insertBack(T value) {
@@ -256,6 +363,22 @@ struct Deque(T, bool mayNull = true) {
     }
 
     p.insertBack(value);
+  }
+
+  void insertBack(Stuff)(Stuff stuff)
+      if (isImplicitlyConvertible!(Stuff, T) || isInputRange!Stuff
+        && isImplicitlyConvertible!(ElementType!Stuff, T)) {
+    foreach (e; stuff) {
+      insertBack(e);
+    }
+  }
+
+  void opOpAssign(string op, Stuff)(Stuff stuff) if (op == "~") {
+    static if (is(typeof(stuff[]))) {
+      insertBack(stuff[]);
+    } else {
+      insertBack(stuff);
+    }
   }
 
   void removeBack() {
@@ -285,13 +408,13 @@ struct Deque(T, bool mayNull = true) {
   }
 
   string toString() const {
-    return !empty ? p.toString() : "[  ]";
+    return !empty ? p.toString() : "[]";
   }
 }
 
-unittest {
+// unittest {{{
+@system unittest {
   auto dq = Deque!int();
-
 
   assert(dq.empty);
   dq.insertBack(1);
@@ -301,7 +424,6 @@ unittest {
   dq.insertBack(5);
 
   import std.algorithm : equal;
-  import std.stdio;
 
   assert(equal(dq[], [4, 2, 1, 3, 5]));
   dq.removeBack();
@@ -316,3 +438,58 @@ unittest {
   assert(equal(dq[0 .. 2], [7, 2]));
   assert(equal(dq[2 .. $], [1, 3, 6]));
 }
+
+@system unittest {
+  import std.algorithm : equal;
+
+  auto dq = Deque!int(1, 2, 3, 4, 5);
+
+  ++dq[0 .. $];
+  assert(equal(dq[], [2, 3, 4, 5, 6]));
+  --dq[0 .. 3];
+  assert(equal(dq[], [1, 2, 3, 5, 6]));
+  dq[] *= 2;
+  assert(equal(dq[], [2, 4, 6, 10, 12]));
+  dq[2 .. $] /= 2;
+  assert(equal(dq[], [2, 4, 3, 5, 6]));
+
+  dq ~= 8;
+
+  dq[0 .. $] = 0;
+
+  assert(equal(dq[], [0, 0, 0, 0, 0, 0]));
+}
+
+@system unittest {
+  import std.algorithm : equal;
+
+  struct T {
+    this(int _x) {
+      x = _x;
+    }
+
+    int x;
+  }
+
+  auto dq = Deque!T(T(1), T(2));
+  assert(equal(dq[], [T(1), T(2)]));
+}
+
+@system unittest {
+  import std.algorithm : equal;
+  import std.range : iota;
+
+  auto dq = Deque!int(iota(0, 10));
+  assert(equal(dq[], iota(0, 10)));
+}
+
+@system unittest {
+  import std.algorithm : equal;
+  import std.range : iota;
+
+  auto dq = Deque!int();
+
+  dq ~= iota(0, 100);
+  assert(equal(dq[], iota(0, 100)));
+}
+// }}}
