@@ -375,6 +375,7 @@ struct Stack(T, bool mayNull = true) {
   }
 }
 
+// unittest {{{
 @system unittest {
   auto st = Stack!int();
   st ~= 1;
@@ -432,3 +433,4 @@ struct Stack(T, bool mayNull = true) {
   auto st = Stack!Test(Test(1), Test(2));
   assert(equal(st[], [Test(1), Test(2)]));
 }
+// }}}
