@@ -13,3 +13,5 @@ libnephele.a
 *.o
 *.obj
 *.lst
+
+.DS_Store
