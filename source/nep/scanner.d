@@ -52,12 +52,10 @@ class Scanner {
     return ret;
   }
 
-  void scan()() {
-  }
-
-  void scan(T, S...)(ref T x, ref S args) {
-    x = next!(T);
-    scan(args);
+  void scan(T...)(ref T args) {
+    foreach (ref arg; args) {
+      arg = next!(typeof(arg));
+    }
   }
 
   void fromString(StrType)(StrType s) if (isSomeString!(StrType)) {
