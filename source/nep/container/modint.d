@@ -72,17 +72,18 @@ struct ModInt(ulong modulus) {
 
   ModInt opOpAssign(string op)(ulong rhs) {
     static if (op == "+") {
-      val += rhs;
+      val += ModInt(rhs).value;
       if (val >= modulus) {
         val -= modulus;
       }
     } else if (op == "-") {
-      if (val < rhs) {
+      auto r = ModInt(rhs);
+      if (val < r.value) {
         val += modulus;
       }
-      val -= rhs;
+      val -= r.value;
     } else if (op == "*") {
-      val = val * rhs % modulus;
+      val = val * ModInt(rhs).value % modulus;
     } else if (op == "/") {
       this *= ModInt(rhs).inv;
     } else if (op == "^^") {
@@ -140,7 +141,7 @@ struct ModInt(ulong modulus) {
 
   ModInt inv() const {
     ModInt ret = this;
-    ret^^=modulus - 2;
+    ret ^^= modulus - 2;
     return ret;
   }
 
