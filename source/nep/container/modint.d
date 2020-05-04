@@ -151,6 +151,60 @@ struct ModInt(ulong modulus) {
   }
 }
 
+template isModInt(T) {
+  immutable enum isModInt = is(T: ModInt!M, uint M);
+}
+
+struct Combination(T) if (isModInt!T) {
+  private {
+    T[] fact, invFact;
+
+    T[] makeFactTable(T)(size_t n) if (isModInt!T) {
+      import std.range : take, recurrence;
+      import std.array : array;
+
+      return T(1).recurrence!((a, n) => a[n - 1] * n).take(n).array;
+    }
+
+    T[] makeInvFactTable(T)(size_t n) if (isModInt!T) {
+      auto fact = makeFactTable!T(n);
+      T[] invFact = new T[n];
+      foreach (i; 0 .. n) {
+        invFact[i] = fact[i].inv;
+      }
+
+      return invFact;
+    }
+
+  }
+
+  this(size_t size) {
+    fact = makeFactTable(size + 1);
+    invFact = makeInvFactTable(size + 1);
+  }
+
+  // 組み合わせ
+  T C(int n, int r) const {
+    if (r < 0 || n < r) return 0;
+
+    return fact[n] * invFact[r] * invFact[n - r];
+  }
+
+  // 重複組み合わせ
+  T H(int n, int r) const {
+    if (n < 0 || r < 0) return 0;
+
+    return r == 0 ? 1 : C(n + r - 1, r);
+  }
+
+  // 順列
+  T P(int n, int r) const {
+    if (r < 0 || n < r) return 0;
+
+    return fact[n] * invFact[n - r];
+  }
+}
+
 // unittest {{{
 
 @system unittest {
