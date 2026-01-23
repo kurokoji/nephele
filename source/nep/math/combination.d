@@ -15,12 +15,12 @@ struct Combination(T) if (isModInt!T) {
 
     T[] makeInvFactTable(size_t n) {
       auto fact = makeFactTable(n);
-      T[] invFact = new T[n];
+      T[] retInvFact = new T[n];
       foreach (i; 0 .. n) {
-        invFact[i] = fact[i].inv;
+        retInvFact[i] = fact[i].inv;
       }
 
-      return invFact;
+      return retInvFact;
     }
   }
 
