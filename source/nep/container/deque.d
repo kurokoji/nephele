@@ -370,8 +370,8 @@ struct Deque(T, bool mayNull = true) {
   }
 
   void insertBack(Stuff)(Stuff stuff)
-      if (isImplicitlyConvertible!(Stuff, T) || isInputRange!Stuff
-      && isImplicitlyConvertible!(ElementType!Stuff, T)) {
+      if (isImplicitlyConvertible!(Stuff, T) ||
+      (isInputRange!Stuff && isImplicitlyConvertible!(ElementType!Stuff, T))) {
     foreach (e; stuff) {
       insertBack(e);
     }

@@ -227,19 +227,19 @@ struct Stack(T, bool mayNull = true) {
         }
       }
 
-      void opSliceOpAssign(string op)(E value) {
+      void opSliceOpAssign(string op)(E _) {
         assert(_r <= _outer.length);
 
         foreach (idx; _l .. _r) {
-          mixin("(*_outer)[idx] " ~ op ~ "= value;");
+          mixin("(*_outer)[idx] " ~ op ~ "= _;");
         }
       }
 
-      void opSliceOpAssign(string op)(E value, size_t i, size_t j) {
+      void opSliceOpAssign(string op)(E _, size_t i, size_t j) {
         assert(_l + j <= _r);
 
         foreach (idx; _l + i .. _l + j) {
-          mixin("(*_outer)[idx] " ~ op ~ "= value;");
+          mixin("(*_outer)[idx] " ~ op ~ "= _;");
         }
       }
     }
@@ -345,8 +345,8 @@ struct Stack(T, bool mayNull = true) {
   }
 
   void push(Stuff)(Stuff stuff)
-      if (isImplicitlyConvertible!(Stuff, T) || isInputRange!Stuff
-        && isImplicitlyConvertible!(ElementType!Stuff, T)) {
+      if (isImplicitlyConvertible!(Stuff, T) || (isInputRange!Stuff
+        && isImplicitlyConvertible!(ElementType!Stuff, T))) {
     foreach (e; stuff) {
       push(e);
     }
