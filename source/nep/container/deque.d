@@ -183,14 +183,14 @@ struct Deque(T, bool mayNull = true) {
 
     void popFront() {
       assert(!empty,
-          "nep.container.deque.RangeT.popFront: Attempting to access the front of an empty Deque");
+        "nep.container.deque.RangeT.popFront: Attempting to access the front of an empty Deque");
 
       ++_l;
     }
 
     void popBack() {
       assert(!empty,
-          "nep.container.deque.RangeT.popBack: Attempting to access the back of an empty Deque");
+        "nep.container.deque.RangeT.popBack: Attempting to access the back of an empty Deque");
 
       --_r;
     }
@@ -370,8 +370,8 @@ struct Deque(T, bool mayNull = true) {
   }
 
   void insertBack(Stuff)(Stuff stuff)
-      if (isImplicitlyConvertible!(Stuff, T) || isInputRange!Stuff
-        && isImplicitlyConvertible!(ElementType!Stuff, T)) {
+      if (isImplicitlyConvertible!(Stuff, T) ||
+      (isInputRange!Stuff && isImplicitlyConvertible!(ElementType!Stuff, T))) {
     foreach (e; stuff) {
       insertBack(e);
     }
