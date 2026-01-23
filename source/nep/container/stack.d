@@ -162,10 +162,6 @@ struct Stack(T, bool mayNull = true) {
       ref inout(E) back() inout {
         return this[$ - 1];
       }
-
-      RangeT!A save() {
-        return this;
-      }
     }
 
     void popFront() {
